@@ -212,6 +212,56 @@ func TestMaker_Make(t *testing.T) {
 	assert.Equal(t, "123456", string(m.Make()))
 }
 
+func TestMaker_ManipulatePad(t *testing.T) {
+	tests := []struct {
+		name string
+
+		pad            []byte
+		expectsRealloc bool
+	}{
+		{
+			name:           "nil",
+			pad:            nil,
+			expectsRealloc: true,
+		},
+		{
+			name:           "length allows",
+			pad:            make([]byte, 10),
+			expectsRealloc: false,
+		},
+		{
+			name:           "capacity allows",
+			pad:            make([]byte, 2, 10),
+			expectsRealloc: false,
+		},
+		{
+			name:           "reallocation required",
+			pad:            make([]byte, 2, 3),
+			expectsRealloc: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &Maker{}
+			m.add(func(s []byte) {
+				s[0] = '1'
+			}, 1)
+			m.add(func(s []byte) {
+				s[0] = '2'
+				s[1] = '3'
+			}, 2)
+			m.add(func(s []byte) {
+				s[0] = '4'
+				s[1] = '5'
+				s[2] = '6'
+			}, 3)
+			section, realloc := m.ManipulatePad(tt.pad)
+			assert.Equal(t, "123456", string(section))
+			assert.Equal(t, tt.expectsRealloc, realloc)
+		})
+	}
+}
+
 func TestNew(t *testing.T) {
 	assert.Equal(t, &Maker{}, New())
 }

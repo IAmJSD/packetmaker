@@ -136,6 +136,28 @@ func (m *Maker) Make() []byte {
 	return s
 }
 
+// ManipulatePad is used to try and manipulate a pre-existing pad. This is useful for saving memory.
+// If the size of the data is greater than cap, then Make will be called and a new slice will be allocated.
+// The part of the slice that was used will be returned and whether it was re-allocated.
+func (m *Maker) ManipulatePad(s []byte) (section []byte, reallocated bool) {
+	if s != nil {
+		if len(s) >= m.len || cap(s) >= m.len {
+			// Best case scenario - we do not need to reallocate.
+			s = s[:m.len]
+			q := m.queueFirst
+			offset := 0
+			for q != nil {
+				offset += q.do(s[offset:])
+				q = q.next
+			}
+			return s, false
+		}
+	}
+
+	// We need to re-allocate the pad.
+	return m.Make(), true
+}
+
 // New is used to create a new packet maker.
 func New() *Maker {
 	return &Maker{}
