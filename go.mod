@@ -1,4 +1,4 @@
-module github.com/jakemakesstuff/packetmaker
+module github.com/iamjsd/packetmaker
 
 go 1.18
 
