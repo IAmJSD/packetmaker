@@ -33,6 +33,11 @@ func (m *Maker) add(f func([]byte), l int) *Maker {
 	return m
 }
 
+// Len returns the length of the packet maker.
+func (m *Maker) Len() int {
+	return m.len
+}
+
 // Byte is used to add a single byte to the packet.
 func (m *Maker) Byte(b uint8) *Maker {
 	return m.add(func(offsettedChunk []byte) {
